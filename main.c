@@ -42,6 +42,7 @@ void printGrades(int player); //print all the grade history of the player
 #endif
 
 void generatePlayers(int n, int initEnergy){
+	int i;
 	//n time loop
 	for(i=0; i<n; i++){
 		//input name
@@ -52,7 +53,7 @@ void generatePlayers(int n, int initEnergy){
 		player_position[i]=0;
 		
 		//set energy
-		player_position[i]=initEnergy; 
+		player_energy[i]=initEnergy; 
 	} 
 }
 
