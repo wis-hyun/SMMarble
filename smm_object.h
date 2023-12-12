@@ -18,6 +18,25 @@
 
 #define SMMNODE_TYPE_MAX	7
 
+typedef enum smmObjType{
+	smmObjType_board =0,
+	smmObjType_card,
+	smmObjType_grade
+}smmObjType_e;
+
+typedef enum smmObjGrade{
+	smmObjGrade_Ap =0,
+	smmObjGrade_A0,
+	smmObjGrade_Am,
+	smmObjGrade_BP,
+	smmObjGrade_B0,
+	smmObjGrade_Bm,
+	smmObjGrade_Cp,
+	smmObjGrade_C0,
+	smmObjGrade_Cm,
+	smmObjGrade_max
+}smmObjGrade_e;
+
 /* node type :
     lecture,
     restaurant,
@@ -43,16 +62,18 @@
 
 
 //object generation
-void smmObj_genNode(char* name, int type, int credit, int energy);
+void* smmObj_genObject(char* name, smmObjType_e objType, int type, int credit, int energy, smmObjGrade_e grade);
 
 //member retrieving
-char* smmObj_getNodeName(int node_nr);
-int smmObj_getNodeType(int node_nr);
-int smmObj_getNodeCredit(int node_nr);
-int smmObj_getNodeEnergy(int node_nr);
+char* smmObj_getNodeName(void*);
+int smmObj_getNodeType(void*);
+int smmObj_getNodeCredit(void*);
+int smmObj_getNodeEnergy(void*);
+int smmObj_getNodeGrade(void*);
+
 
 //element to string
 char* smmObj_getTypeName(int type);
-
+char* smmObj_getGradeName(smmObjGrade_e grade);
 
 #endif /* smm_object_h */
