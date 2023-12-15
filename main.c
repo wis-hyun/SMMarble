@@ -134,6 +134,8 @@ void actionNode(int player)
                     grade = rand() % smmObjGrade_max;
                     gradePtr = smmObj_genObject(name, smmObjType_grade, 0, smmObj_getNodeCredit(boardPtr), 0, (smmObjGrade_e)grade);
                     smmdb_addTail(LISTNO_OFFSET_GRADE + player, gradePtr);
+				}else{
+					printf("에너지가 부족하여 강의를 들을 수 없습니다.\n");
 				}
             }
         }
@@ -259,7 +261,7 @@ int main(int argc, const char * argv[]) {
     do
     {
         //input player number to player_nr
-        printf("input player no.:");
+        printf("\n\ninput player no.:");
     	scanf("%d", &player_nr);
     	fflush(stdin);
     }
