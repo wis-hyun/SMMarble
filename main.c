@@ -42,10 +42,6 @@ static char player_name [MAX_PLAYER][MAX_CHARGNAME];
 //function prototypes
 #if 0
 int isGraduated(void); //check if any player is graduated
-void generatePlayers(int n, int initEnergy); //generate a new player
-void printGrades(int player); //print grade history of the player
-void goForward(int player, int step); //make player go "step" steps on the board (check if player is graduated)
-void printPlayerStatus(void); //print all player status at the beginning of each turn
 float calcAverageGrade(int player); //calculate average grade of the player
 smmGrade_e takeLecture(int player, char *lectureName, int credit); //take the lecture (insert a grade of the player)
 void* findGrade(int player, char *lectureName); //find the grade from the player's grade history
@@ -53,6 +49,7 @@ void printGrades(int player); //print all the grade history of the player
 #endif
 
 
+//generate a new player
 void generatePlayers(int n, int initEnergy){
 	int i;
 	//n time loop
@@ -65,7 +62,7 @@ void generatePlayers(int n, int initEnergy){
 	
 		
 		//set position
-		cur_player[i].position=0;
+		cur_player[i].position=0;  
 		
 		//set energy
 		cur_player[i].energy=initEnergy; 
@@ -73,6 +70,8 @@ void generatePlayers(int n, int initEnergy){
 		cur_player[i].flag_graduate=0;
 	} 
 }
+
+//print grade history of the player
 //강의를 들었는지의 유무 , printgrade응용해서 함수 만들기 (성적이력 검색함수정의) 
 void printGrades(int player){
 	int i;
@@ -86,6 +85,8 @@ void printGrades(int player){
 		printf("%s : %s\n", smmObj_getNodeName(gradePtr), smmObj_getGradeName(smmObj_getNodeGrade(gradePtr))); //grade문자열 만들어서 출력 (A0,Bm) smmnodename 방식 
 	}
 }
+
+//print all player status at the beginning of each turn
 void printPlayerStatus(void){
 	int i;
 	for (i=0;i<player_nr;i++){
@@ -117,30 +118,34 @@ void actionNode(int player)
 	void *gradePtr;
 	char *name = smmObj_getNodeName(boardPtr);
 	int grade;
-	
-    switch(type)
-    {
-        //case lecture:
-        case SMMNODE_TYPE_LECTURE:
-        	//user input : 강의를 들을건지 선택 
-        	
-        	if (cur_player[player].energy >= smmObj_getNodeEnergy(boardPtr) )
-        	{
-				cur_player[player].accumCredit += smmObj_getNodeCredit(boardPtr);
-				cur_player[player].energy -= smmObj_getNodeEnergy(boardPtr);
-			}
-			grade = rand()%smmObjGrade_max;
-			gradePtr = smmObj_genObject(name, smmObjType_grade, 0, smmObj_getNodeCredit(boardPtr), 0, (smmObjGrade_e)grade); 
-			smmdb_addTail(LISTNO_OFFSET_GRADE+player, gradePtr); 
-			break;		
-        default:
-            break;
-    }
-}
-//여기도 actionNode와 같이 포인터주소를 넣어주어야됨. 
+	switch(type)
+{
+    case SMMNODE_TYPE_LECTURE:
+        {
+            int ox;
+            printf("%s강의를 들으려면 1, 듣지 않으려면 0을 입력하세요: ", name);
+            scanf("%d", &ox);
+
+            if (ox == 1) {
+                if (cur_player[player].energy >= smmObj_getNodeEnergy(boardPtr)) {
+                    cur_player[player].accumCredit += smmObj_getNodeCredit(boardPtr);
+                    cur_player[player].energy -= smmObj_getNodeEnergy(boardPtr);	
+				
+                    grade = rand() % smmObjGrade_max;
+                    gradePtr = smmObj_genObject(name, smmObjType_grade, 0, smmObj_getNodeCredit(boardPtr), 0, (smmObjGrade_e)grade);
+                    smmdb_addTail(LISTNO_OFFSET_GRADE + player, gradePtr);
+				}
+            }
+        }
+        break;
+    default:
+        break;
+} }
+
+//make player go "step" steps on the board (check if player is graduated)
 void goForward(int player, int step)
 {
-//	void *boardPtr;
+//	void *boardPtr;  
 	cur_player[player].position = (cur_player[player].position + step)%board_nr;
 	void *boardPtr= smmdb_getData(LISTNO_NODE, cur_player[player].position);
 	printf("%s go to node %i (name : %s)\n", cur_player[player].name, cur_player[player].position, smmObj_getNodeName(boardPtr));
