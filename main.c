@@ -45,7 +45,6 @@ int isGraduated(void); //check if any player is graduated
 float calcAverageGrade(int player); //calculate average grade of the player
 smmGrade_e takeLecture(int player, char *lectureName, int credit); //take the lecture (insert a grade of the player)
 void* findGrade(int player, char *lectureName); //find the grade from the player's grade history
-void printGrades(int player); //print all the grade history of the player
 #endif
 
 
@@ -82,7 +81,7 @@ void printGrades(int player){
 	for(i=0;i<smmdb_len(LISTNO_OFFSET_GRADE+player);i++)
 	{
 		gradePtr = smmdb_getData(LISTNO_OFFSET_GRADE+player, i); 
-		printf("%s : %s\n", smmObj_getNodeName(gradePtr), smmObj_getGradeName(smmObj_getNodeGrade(gradePtr))); //grade문자열 만들어서 출력 (A0,Bm) smmnodename 방식 
+		printf("%s : %s\n", smmObj_getNodeName(gradePtr), smmObj_getGradeName(smmObj_getNodeGrade(gradePtr)));    
 	}
 }
 
@@ -101,12 +100,12 @@ int rolldie(int player)
     c = getchar();
     fflush(stdin);
     
-#if 1
     if (c == 'g')
         printGrades(player);
-#endif
+    fflush(stdin);
     
     return (rand()%MAX_DIE + 1);
+    
 }
 
 
@@ -119,12 +118,13 @@ void actionNode(int player)
 	char *name = smmObj_getNodeName(boardPtr);
 	int grade;
 	switch(type)
-{
+	{
     case SMMNODE_TYPE_LECTURE:
         {
             int ox;
             printf("%s강의를 들으려면 1, 듣지 않으려면 0을 입력하세요: ", name);
             scanf("%d", &ox);
+            fflush(stdin);
 
             if (ox == 1) {
                 if (cur_player[player].energy >= smmObj_getNodeEnergy(boardPtr)) {
@@ -141,8 +141,25 @@ void actionNode(int player)
         }
         break;
     default:
+
+    case SMMNODE_TYPE_RESTAURANT:
+	{
+		cur_player[player].energy += smmObj_getNodeEnergy(boardPtr);
+		break;
+	} 
+	
+	case SMMNODE_TYPE_HOME:
+	{
+		if(cur_player[player].position >= board_nr){
+			cur_player[player].energy += smmObj_getNodeEnergy(boardPtr);
+		}
+		break;
+	}
+	
+	
         break;
-} }
+	} 
+}
 
 //make player go "step" steps on the board (check if player is graduated)
 void goForward(int player, int step)
