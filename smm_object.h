@@ -37,6 +37,10 @@ typedef enum smmObjGrade{
 	smmObjGrade_max
 }smmObjGrade_e;
 
+typedef enum smmObjGrade smmGrade_e;
+smmGrade_e takeLecture(int player, char *lectureName, int credit);
+void* findGrade(int player, char *lectureName);
+
 /* node type :
     lecture,
     restaurant,
