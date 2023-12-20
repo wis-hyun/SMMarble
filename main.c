@@ -29,6 +29,7 @@ typedef struct player{
 	char name[MAX_CHARNAME];
 	int accumCredit;
 	int flag_graduate;
+	int success; 
 }player_t;
 
 static player_t *cur_player;
@@ -69,6 +70,9 @@ void generatePlayers(int n, int initEnergy){
         
         // Set player's experiment flag
         cur_player[i].flag_graduate = 0;
+        
+        // Set player's experiment success value
+        cur_player[i].success = 0;
     } 
 }
 
@@ -106,7 +110,6 @@ int rolldie(int player){
     // If 'g' is pressed, display player's grade history
     if (c == 'g')
         printGrades(player);
-    
     // Return a random number between 1 and MAX_DIE
     return (rand() % MAX_DIE + 1);
 }
@@ -196,45 +199,28 @@ void actionNode(int player)
             printf("In the Experiment State.\n");
 
             // Generate a random success value for the experiment
-            int success = rand() % MAX_DIE + 1;
-            printf("Experiment Success Value is %d\n", success);
+            cur_player[player].success = rand() % MAX_DIE + 1;
+            printf("Experiment Success Value is %d\n", cur_player[player].success);
 
             // Move the player to the laboratory
-            cur_player[player].position = SMMNODE_TYPE_LABORATORY;
+            cur_player[player].position = 8; //전자공학실험실 칸 번호인 8 
             printf("Go to the laboratory.\n");
-
-            // Start the experiment
-            if (cur_player[player].flag_graduate == 1)
-            {
-                int challenge = rand() % MAX_DIE + 1;
-                if (challenge < success)
-                {
-                    // If challenge is less than success, allow the player to try again
-                    printf("Challenge: %d < Success: %d, try again\n", challenge, success);
-                    cur_player[player].energy -= smmObj_getNodeEnergy(boardPtr);
-                }
-                else
-                {
-                    // If challenge is greater than or equal to success, end the experiment
-                    printf("Challenge: %d >= Success: %d, Ends the experiment.\n", challenge, success);
-                    cur_player[player].flag_graduate = 0;
-                }
-            }
-            break;
-        }
+    	}
+    	
         case SMMNODE_TYPE_LABORATORY:{
         	if(cur_player[player].flag_graduate == 1){
         		int challenge = rand() % MAX_DIE + 1;
-                if (challenge < success)
+                if (challenge < cur_player[player].success)
                 {
                     // If challenge is less than success, allow the player to try again
-                    printf("Challenge: %d < Success: %d, try again\n", challenge, success);
+                    printf("Challenge: %d < Success: %d, try again\n", challenge, cur_player[player].success);
                     cur_player[player].energy -= smmObj_getNodeEnergy(boardPtr);
+                    
                 }
                 else
                 {
                     // If challenge is greater than or equal to success, end the experiment
-                    printf("Challenge: %d >= Success: %d, Ends the experiment.\n", challenge, success);
+                    printf("Challenge: %d >= Success: %d, Ends the experiment.\n", challenge, cur_player[player].success);
                     cur_player[player].flag_graduate = 0;
                 }
 			}
@@ -247,25 +233,26 @@ void actionNode(int player)
 //make player go "step" steps on the board (check if player is graduated)
 void goForward(int player, int step)
 {
-    // Update player position based on the number of steps
-    cur_player[player].position += step;
+	if(cur_player[player].flag_graduate != 1){
+		// Update player position based on the number of steps
+    	cur_player[player].position += step;
 
-    // Check if the player has moved beyond the board boundary
-    if (cur_player[player].position >= board_nr) {
+    	// Check if the player has moved beyond the board boundary
+    	if (cur_player[player].position >= board_nr) {
         // Adjust player position and replenish energy if passed the last node on the board
-        if (cur_player[player].position > board_nr) {
-            void *firstBoardNode = smmdb_getData(LISTNO_NODE, 0);
-            cur_player[player].energy += smmObj_getNodeEnergy(firstBoardNode);
-        }
-        // Wrap around the board
-        cur_player[player].position %= board_nr;
-    }
+        	if (cur_player[player].position > board_nr) {
+            	void *firstBoardNode = smmdb_getData(LISTNO_NODE, 0);
+            	cur_player[player].energy += smmObj_getNodeEnergy(firstBoardNode);
+        	}
+        	// Wrap around the board
+        	cur_player[player].position %= board_nr;
+    	}
+    	// Retrieve information about the current board node
+    	void *boardPtr = smmdb_getData(LISTNO_NODE, cur_player[player].position);
 
-    // Retrieve information about the current board node
-    void *boardPtr = smmdb_getData(LISTNO_NODE, cur_player[player].position);
-
-    // Print the player's movement to the console
-    printf("%s goes to node %i (name: %s)\n", cur_player[player].name, cur_player[player].position, smmObj_getNodeName(boardPtr));
+    	// Print the player's movement to the console
+    	printf("%s goes to node %i (name: %s)\n", cur_player[player].name, cur_player[player].position, smmObj_getNodeName(boardPtr));
+	}
 }
 
 // Function to register a grade for a lecture taken by a player
@@ -302,41 +289,16 @@ void* findGrade(int player, char *lectureName) {
     return NULL;
 } 
 
-// Function to calculate the average grade of a player
-float calcAverageGrade(int player) {
-    int j;
-    int totalCredits = 0;
-    float totalGradePoints = 0.0;
-
-    // Check the player's grade history
-    for (j= 0; j < smmdb_len(LISTNO_OFFSET_GRADE + player); j++) {
-        void *gradePtr = smmdb_getData(LISTNO_OFFSET_GRADE + player, j);
-        
-        // Accumulate credits and grade points
-        totalCredits += smmObj_getNodeCredit(gradePtr);
-        totalGradePoints += (float)smmObj_getNodeGrade(gradePtr);
-    }
-
-    // Calculate the average grade
-    if (totalCredits > 0) {
-        return totalGradePoints / totalCredits;
-    } else {
-        // Avoid division by zero
-        return 0.0;
-    }
-}
-
 int isGraduated(void) {
     int i;
     for (i = 0; i < player_nr; i++) {
         // Check the current position while wrapping around the board
         int currentPosition = cur_player[i].position % (board_nr + 1);
         // If the credits are fulfilled and the current position is home
-        if (cur_player[i].accumCredit >= GRADUATE_CREDIT && currentPosition == SMMNODE_TYPE_HOME) {
+        if (cur_player[i].accumCredit >= GRADUATE_CREDIT && currentPosition >= 0) {
             // Print the graduation message and return the graduation status
             printf("%s has graduated!\n", cur_player[i].name);
-            // End the game immediately upon graduation
-            exit(0);
+            return 1;
         }
     }
     // If the graduation condition is not satisfied for all players
@@ -354,12 +316,8 @@ void printPlayerInfo(void) {
         for (i = 0; i < smmdb_len(LISTNO_OFFSET_GRADE + winnerIndex); i++) {
             void* gradePtr = findGrade(winnerIndex, smmdb_getData(LISTNO_OFFSET_GRADE + winnerIndex, i));
             // Print lecture information
-            printf("- Lecture: %s | Credits: %d | Grade: %s\n", smmObj_getNodeName(gradePtr), smmObj_getNodeCredit(gradePtr), smmObj_getNodeGrade(gradePtr));
+            printf("- Lecture: %s | Credits: %d | Grade: %s\n", smmObj_getNodeName(gradePtr), smmObj_getNodeCredit(gradePtr), smmObj_getGradeName(smmObj_getNodeGrade(gradePtr)));
         }
-
-        // Calculate and print the average grade for the winner
-        float averageGrade = calcAverageGrade(winnerIndex);
-        printf("Average Grade: %.2f\n", averageGrade);
             
         // Return after printing the information of the first winner
         return;
