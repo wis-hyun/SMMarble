@@ -313,23 +313,18 @@ int isGraduated(void) {
 
 // Function to print information about the lectures taken by the winning player
 void printPlayerInfo(void) {    
-    if (isGraduated()==1) {
-        printf("Lectures Taken:\n");
+    printf("Lectures Taken:\n");
 
-        // Traverse the winner's grade records and print course information
-        int winnerIndex =0;
-        int i;
-        for (i = 0; i < smmdb_len(LISTNO_OFFSET_GRADE + winnerIndex); i++) {
-            void* gradePtr = findGrade(winnerIndex, smmdb_getData(LISTNO_OFFSET_GRADE + winnerIndex, i));
-            // Print lecture information
-            printf("- Lecture: %s | Credits: %d | Grade: %s\n", smmObj_getNodeName(gradePtr), smmObj_getNodeCredit(gradePtr), smmObj_getGradeName(smmObj_getNodeGrade(gradePtr)));
-        }
-            
-        // Return after printing the information of the first winner
-        return;
+    // Traverse the winner's grade records and print course information
+    int winnerIndex =0;
+    int i;
+    for (i = 0; i < smmdb_len(LISTNO_OFFSET_GRADE + winnerIndex); i++) {
+        void* gradePtr = findGrade(winnerIndex, smmdb_getData(LISTNO_OFFSET_GRADE + winnerIndex, i));
+        // Print lecture information
+        printf("- Lecture: %s | Credits: %d | Grade: %s\n", smmObj_getNodeName(gradePtr), smmObj_getNodeCredit(gradePtr), smmObj_getGradeName(smmObj_getNodeGrade(gradePtr)));
     }
+    return;
 }
-
 
 int main(int argc, const char * argv[]) {
     
