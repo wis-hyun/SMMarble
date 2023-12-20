@@ -202,13 +202,14 @@ void actionNode(int player)
             cur_player[player].success = rand() % MAX_DIE + 1;
             printf("Experiment Success Value is %d\n", cur_player[player].success);
 
-            // Move the player to the laboratory
-            cur_player[player].position = 8; //전자공학실험실 칸 번호인 8 
+            // Move the player to the laboratory node (node number 8)
+            cur_player[player].position = 8; 
             printf("Go to the laboratory.\n");
     	}
     	
         case SMMNODE_TYPE_LABORATORY:{
         	if(cur_player[player].flag_graduate == 1){
+        		// Generate a random challenge value
         		int challenge = rand() % MAX_DIE + 1;
                 if (challenge < cur_player[player].success)
                 {
@@ -246,6 +247,11 @@ void goForward(int player, int step)
         	}
         	// Wrap around the board
         	cur_player[player].position %= board_nr;
+        	// Check if the player's accumulated credits meet the graduation criteria
+            if (cur_player[player].accumCredit >= GRADUATE_CREDIT) {
+                // Move to HOME node (position 0)
+                cur_player[player].position = 0;
+            }
     	}
     	// Retrieve information about the current board node
     	void *boardPtr = smmdb_getData(LISTNO_NODE, cur_player[player].position);
@@ -288,14 +294,14 @@ void* findGrade(int player, char *lectureName) {
     // Return NULL if the grade for the given lecture is not found
     return NULL;
 } 
-
+// Function to check if any player has graduated
 int isGraduated(void) {
     int i;
     for (i = 0; i < player_nr; i++) {
         // Check the current position while wrapping around the board
         int currentPosition = cur_player[i].position % (board_nr + 1);
         // If the credits are fulfilled and the current position is home
-        if (cur_player[i].accumCredit >= GRADUATE_CREDIT && currentPosition >= 0) {
+        if (cur_player[i].accumCredit >= GRADUATE_CREDIT && currentPosition == 0) {
             // Print the graduation message and return the graduation status
             printf("%s has graduated!\n", cur_player[i].name);
             return 1;
@@ -305,7 +311,7 @@ int isGraduated(void) {
     return 0;
 }
 
-
+// Function to print information about the lectures taken by the winning player
 void printPlayerInfo(void) {    
     if (isGraduated()==1) {
         printf("Lectures Taken:\n");

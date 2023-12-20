@@ -12,7 +12,7 @@
 #define MAX_NODETYPE    7
 #define MAX_GRADE       9
 #define MAX_NODE      100
-
+// Array containing names for each node type
 static char smmNodeName[SMMNODE_TYPE_MAX][MAX_CHARNAME] = {
 	"강의",
 	"식당",
@@ -22,7 +22,7 @@ static char smmNodeName[SMMNODE_TYPE_MAX][MAX_CHARNAME] = {
 	"음식찬스",
 	"축제시간"
 };
-
+// Array containing grade names
 static char smmGradeName[9][MAX_CHARNAME] = {
 	"A+",
 	"A0",
@@ -35,17 +35,18 @@ static char smmGradeName[9][MAX_CHARNAME] = {
 	"C-"
 };
 
-
+// Function to get the grade name based on the grade enumeration
 char* smmObj_getGradeName(smmObjGrade_e grade){
 	return (char*)smmGradeName[grade];
 } 
 
 
+// Function to get the node type name based on the node type enumeration
 char* smmObj_getTypeName(int type){
 	return (char*)smmNodeName[type];
 } 
 
-
+// Structure representing a SM Marble object
 typedef struct smmObject
 {
 	char name[MAX_CHARNAME];
@@ -56,17 +57,7 @@ typedef struct smmObject
 	smmObjGrade_e grade;
 } smmObject_t;
 
-//static smmObject_t smm_node[MAX_NODE];
-//static int smmObj_noNode =0;
-
-#if 0
-static char smmObj_name[MAX_NODE][MAX_CHARNAME];
-static int smmObj_type[MAX_NODE];
-static int smmObj_credit[MAX_NODE];
-static int smmObj_energy[MAX_NODE];
-#endif
-
-//object generation
+// Function to generate a SM Marble object with specified parameters
 void* smmObj_genObject(char* name, smmObjType_e objType, int type, int credit, int energy, smmObjGrade_e grade)
 {
 	smmObject_t* ptr;
@@ -80,34 +71,31 @@ void* smmObj_genObject(char* name, smmObjType_e objType, int type, int credit, i
     
     return ptr;
 }
-
+// Function to get the name of a SM Marble object
 char* smmObj_getNodeName(void* obj)
 {
 	smmObject_t* ptr= (smmObject_t*)obj;
     return ptr->name;
 }
-
+// Function to get the type of a SM Marble object
 int smmObj_getNodeType(void* obj)
 {
     smmObject_t* ptr= (smmObject_t*)obj;
     return ptr->type;
-	//return smm_node[node_nr].type;
 }
-
+// Function to get the credit value of a SM Marble object
 int smmObj_getNodeCredit(void* obj)
 {
     smmObject_t* ptr= (smmObject_t*)obj;
     return ptr->credit;
-	//return smm_node[node_nr].credit;
 }
-
+// Function to get the energy value of a SM Marble object
 int smmObj_getNodeEnergy(void* obj)
 {
     smmObject_t* ptr= (smmObject_t*)obj;
     return ptr->energy;
-	//return smm_node[node_nr].energy;
 }
-
+// Function to get the grade value of a SM Marble object
 int smmObj_getNodeGrade(void* obj)
 {
 	smmObject_t* ptr= (smmObject_t*)obj;
