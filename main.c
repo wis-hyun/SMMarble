@@ -234,32 +234,34 @@ void actionNode(int player)
 //make player go "step" steps on the board (check if player is graduated)
 void goForward(int player, int step)
 {
-	if(cur_player[player].flag_graduate != 1){
-		// Update player position based on the number of steps
-    	cur_player[player].position += step;
+    if (cur_player[player].flag_graduate != 1) {
+        // Update player position based on the number of steps
+        cur_player[player].position += step;
 
-    	// Check if the player has moved beyond the board boundary
-    	if (cur_player[player].position >= board_nr) {
-        // Adjust player position and replenish energy if passed the last node on the board
-        	if (cur_player[player].position > board_nr) {
-            	void *firstBoardNode = smmdb_getData(LISTNO_NODE, 0);
-            	cur_player[player].energy += smmObj_getNodeEnergy(firstBoardNode);
-        	}
-        	// Wrap around the board
-        	cur_player[player].position %= board_nr;
-        	// Check if the player's accumulated credits meet the graduation criteria
+        // Check if the player has moved beyond the board boundary
+        if (cur_player[player].position >= board_nr) {
+            // Adjust player position and replenish energy if passed the last node on the board
+            void *firstBoardNode = smmdb_getData(LISTNO_NODE, 0);
+            cur_player[player].energy += smmObj_getNodeEnergy(firstBoardNode);
+
+            // Wrap around the board
+            cur_player[player].position %= board_nr;
+
+            // Check if the player's accumulated credits meet the graduation criteria
             if (cur_player[player].accumCredit >= GRADUATE_CREDIT) {
                 // Move to HOME node (position 0)
                 cur_player[player].position = 0;
             }
-    	}
-    	// Retrieve information about the current board node
-    	void *boardPtr = smmdb_getData(LISTNO_NODE, cur_player[player].position);
+        }
 
-    	// Print the player's movement to the console
-    	printf("%s goes to node %i (name: %s)\n", cur_player[player].name, cur_player[player].position, smmObj_getNodeName(boardPtr));
-	}
+        // Retrieve information about the current board node
+        void *boardPtr = smmdb_getData(LISTNO_NODE, cur_player[player].position);
+
+        // Print the player's movement to the console
+        printf("%s goes to node %i (name: %s)\n", cur_player[player].name, cur_player[player].position, smmObj_getNodeName(boardPtr));
+    }
 }
+
 
 // Function to register a grade for a lecture taken by a player
 smmGrade_e takeLecture(int player, char *lectureName, int credit) {
